@@ -2,9 +2,17 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
-import { ArrowBigDownDash, Eye, Moon, Search, Sun } from "lucide-react";
+import {
+	ArrowBigDownDash,
+	Eye,
+	Moon,
+	Search,
+	Sun,
+	Youtube,
+} from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
 import { DownloadDialog } from "./components/DownloadDialog";
+import { Skeleton } from "./components/ui/skeleton";
 
 function App() {
 	const API_KEY = import.meta.env.VITE_YT_API_KEY;
@@ -17,7 +25,13 @@ function App() {
 
 	const [isChecked, setIsChecked] = useState(false);
 
+	const [loading, setLoading] = useState(false);
+
 	const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+
+	const [fullTitle, setFullTitle] = useState("");
+	const [channelTitle, setChannelTitle] = useState("");
+	const [channelUrl, setChannelUrl] = useState("");
 
 	useEffect(() => {
 		const savedTheme = localStorage.getItem("theme");
@@ -59,47 +73,64 @@ function App() {
 	}
 
 	async function searchVideos() {
-		console.log("User search query = " + searchQuery);
+		setLoading(true); // START loading
+		try {
+			console.log("User search query = " + searchQuery);
+			setVideoId("");
 
-		const videoId = getYoutubeVideoId(searchQuery);
+			const videoId = getYoutubeVideoId(searchQuery);
+			if (!videoId) {
+				throw new Error("Invalid YouTube URL");
+			}
 
-		const videoResources = await fetch(
-			`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoId}&key=${API_KEY}`
-		);
+			const videoResources = await fetch(
+				`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoId}&key=${API_KEY}`
+			);
 
-		const res = await fetch(
-			`/api/download?url=https://www.youtube.com/watch?v=${videoId}`
-		);
+			const res = await fetch(
+				`/api/fetchInfo?url=https://www.youtube.com/watch?v=${videoId}`
+			);
 
-		if (!res.ok) {
-			const text = await res.text();
-			console.error("Backend error response:", text);
-			throw new Error("Server error while downloading video");
+			if (!res.ok) {
+				const text = await res.text();
+				console.error("Backend error response:", text);
+				throw new Error("Server error while fetching video info");
+			}
+
+			const contentType = res.headers.get("content-type") || "";
+			if (!contentType.includes("application/json")) {
+				const text = await res.text();
+				console.error("Unexpected response format:", text);
+				throw new Error(
+					"Expected JSON from /api/fetchInfo, got something else."
+				);
+			}
+
+			const data = await res.json();
+			console.log("Video data using yt-dlp: ", data);
+
+			setFullTitle(data.fulltitle);
+			setChannelTitle(data.channel);
+			setChannelUrl(data.channel_url);
+
+			const videoData = await videoResources.json();
+			console.log("Youtube API video data: ", videoData);
+
+			const titleData = videoData.items[0].snippet.title;
+			const thumbnailData = videoData.items[0].snippet.thumbnails.standard.url;
+			const viewsData = videoData.items[0].statistics.viewCount;
+
+			setVideoId(videoId);
+			setTitle(titleData);
+			setThumbnail(thumbnailData);
+			setViews(viewsData);
+		} catch (error) {
+			console.error("Search error:", error);
+			alert(error instanceof Error ? error.message : "Unknown error occurred");
+		} finally {
+			setLoading(false);
+			setSearchQuery("");
 		}
-
-		const contentType = res.headers.get("content-type") || "";
-		if (!contentType.includes("application/json")) {
-			const text = await res.text();
-			console.error("Unexpected response format:", text);
-			throw new Error("Expected JSON from /api/download, got something else.");
-		}
-
-		const data = await res.json();
-		console.log("Video data using yt-dlp: ", data);
-
-		const videoData = await videoResources.json();
-
-		console.log("Youtube API video data: ", videoData);
-
-		const titleData = videoData.items[0].snippet.title;
-		const thumbnailData = videoData.items[0].snippet.thumbnails.standard.url;
-		const viewsData = videoData.items[0].statistics.viewCount;
-
-		console.log(videoId);
-		if (videoId) setVideoId(videoId);
-		setTitle(titleData);
-		setThumbnail(thumbnailData);
-		setViews(viewsData);
 	}
 
 	return (
@@ -110,6 +141,7 @@ function App() {
 					<Input
 						id="search"
 						type="text"
+						className=" "
 						placeholder="YouTube URL"
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
@@ -120,7 +152,7 @@ function App() {
 							}
 						}}
 					/>
-					<Button variant="outline" onClick={searchVideos}>
+					<Button variant="outline" onClick={searchVideos} disabled={loading}>
 						<Search />
 					</Button>
 				</div>
@@ -160,10 +192,24 @@ function App() {
 				</div>
 			</div>
 
+			{loading && (
+				<div className="flex flex-col gap-6 mt-6 w-full max-w-[47rem] mx-auto">
+					{/* Video thumbnail skeleton */}
+					<Skeleton className="h-[480px] w-full rounded-lg bg-[#c9ced8] dark:bg-[#1f1f1f]" />
+
+					{/* Text skeletons */}
+					<div className="flex flex-col gap-3">
+						<Skeleton className="h-6 w-2/5 bg-[#c9ced8] dark:bg-[#1f1f1f]" />{" "}
+						{/* Title */}
+						<Skeleton className="h-4 w-3/5 bg-[#c9ced8] dark:bg-[#1f1f1f]" />{" "}
+						{/* Subtitle */}
+					</div>
+				</div>
+			)}
 			{/* Video Card */}
 			{videoId && (
-				<div className="flex items-center justify-center mt-10">
-					<div className="flex flex-col w-full max-w-[47rem] border border-gray-200 dark:border-[rgba(229,229,229,0.2)] rounded-lg overflow-hidden shadow-xl bg-[#f2f2f2] dark:bg-[#1e1e1e]">
+				<div className="flex items-center justify-center mt-6">
+					<div className="flex flex-col w-full max-w-[48rem] border border-black dark:border-[rgba(229,229,229,0.27)] rounded-lg overflow-hidden shadow-xl bg-[#f2f2f2] dark:bg-[#1e1e1e]">
 						<a
 							href={`https://www.youtube.com/watch?v=${videoId}`}
 							target="_blank"
@@ -202,12 +248,22 @@ function App() {
 								</div>
 							</div>
 
+							<Separator className="w-full h-[1px] bg-gray-300 dark:bg-gray-700 my-3" />
+
+							<div className="w-full flex items-center gap-2 text-sm font-medium text-muted-foreground">
+								<Youtube className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+								<p className="text-foreground">Channel:</p>
+								<a href={channelUrl} target="_blank" rel="noopener noreferrer">
+									<span className="text-gray-700 dark:text-gray-300 hover:underline hover:text-primary transition-colors truncate">
+										{channelTitle}
+									</span>
+								</a>
+							</div>
+
 							<div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 mt-2">
 								<Eye className="w-4 h-4" />
 								<span>{formatViews(views)} views</span>
 							</div>
-
-							<Separator className="w-full h-[1px] bg-gray-300 dark:bg-gray-700 my-3" />
 						</div>
 					</div>
 				</div>
@@ -215,9 +271,9 @@ function App() {
 
 			<DownloadDialog
 				open={showDownloadDialog}
+				videoId={videoId}
 				onClose={() => setShowDownloadDialog(false)}
-				fieldLabel={"Video name"}
-				fieldName={""}
+				fileName={fullTitle}
 				onSubmit={() => {
 					console.log("Start downloading");
 				}}
