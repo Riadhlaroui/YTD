@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "./ui/separator";
 import { Input } from "./ui/input";
 
+//To Do: Add option to let the user select the default download location
+// -Add option to download only the audio
+// -Add some basic info in download page like a eta timer and file size etc..
+
 interface DownloadDialogProps {
 	open: boolean;
 	videoId: string;
@@ -79,7 +83,7 @@ export function DownloadDialog({
 	if (!open) return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50">
+		<div className="fixed p-2 inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50">
 			<div
 				ref={dialogRef}
 				className="bg-white dark:bg-[#262626] text-black dark:text-white rounded-lg shadow-lg w-full max-w-md p-6 space-y-4 relative"

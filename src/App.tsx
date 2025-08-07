@@ -134,14 +134,14 @@ function App() {
 	}
 
 	return (
-		<div className="w-full px-4 py-8 bg-[#f6f6f6] dark:bg-[#121212]  text-black dark:text-white">
+		<div className="w-full mt-4 py-8 bg-[#f6f6f6] dark:bg-[#121212] text-black dark:text-white min-h-screen">
 			{/* Top Bar */}
 			<div className="flex flex-col items-center gap-4 max-w-3xl mx-auto">
-				<div className="flex w-full items-center gap-2">
+				<div className="flex flex-col sm:flex-row w-full items-center gap-2">
 					<Input
 						id="search"
 						type="text"
-						className=" "
+						className="w-full text-base md:text-sm"
 						placeholder="YouTube URL"
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
@@ -152,8 +152,13 @@ function App() {
 							}
 						}}
 					/>
-					<Button variant="outline" onClick={searchVideos} disabled={loading}>
-						<Search />
+					<Button
+						variant="outline"
+						onClick={searchVideos}
+						disabled={loading}
+						className="w-full sm:w-auto py-2 px-4"
+					>
+						<Search className="w-5 h-5" />
 					</Button>
 				</div>
 
@@ -169,7 +174,7 @@ function App() {
 							/>
 							{/* Light */}
 							<span
-								className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-l-md transition-all ${
+								className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-l-md transition-all ${
 									!isChecked
 										? "bg-gray-200 text-black dark:bg-white/10 dark:text-white"
 										: "text-gray-500 dark:text-gray-400"
@@ -179,7 +184,7 @@ function App() {
 							</span>
 							{/* Dark */}
 							<span
-								className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-r-md transition-all ${
+								className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-r-md transition-all ${
 									isChecked
 										? "bg-gray-200 text-black dark:bg-white/10 dark:text-white"
 										: "text-gray-500 dark:text-gray-400"
@@ -195,10 +200,12 @@ function App() {
 			{loading && (
 				<div className="flex flex-col gap-6 mt-6 w-full max-w-[47rem] mx-auto">
 					{/* Video thumbnail skeleton */}
-					<Skeleton className="h-[480px] w-full rounded-lg bg-[#c9ced8] dark:bg-[#1f1f1f]" />
+					<div className="aspect-video w-full">
+						<Skeleton className="h-full w-full rounded-lg bg-[#c9ced8] dark:bg-[#1f1f1f]" />
+					</div>
 
 					{/* Text skeletons */}
-					<div className="flex flex-col gap-3">
+					<div className="flex flex-col gap-3 px-2">
 						<Skeleton className="h-6 w-2/5 bg-[#c9ced8] dark:bg-[#1f1f1f]" />{" "}
 						{/* Title */}
 						<Skeleton className="h-4 w-3/5 bg-[#c9ced8] dark:bg-[#1f1f1f]" />{" "}
@@ -206,6 +213,7 @@ function App() {
 					</div>
 				</div>
 			)}
+
 			{/* Video Card */}
 			{videoId && (
 				<div className="flex items-center justify-center mt-6">
@@ -218,13 +226,15 @@ function App() {
 							<img
 								src={thumbnail}
 								alt={title}
-								className="w-full object-cover"
+								className="w-full aspect-video object-cover"
 							/>
 						</a>
 
-						<div className="p-4">
-							<div className="flex justify-between items-start">
-								<p className="text-lg font-semibold leading-snug">{title}</p>
+						<div className="p-3 sm:p-4">
+							<div className="flex justify-between items-start gap-2">
+								<p className="text-base sm:text-lg font-semibold leading-snug flex-1 break-words">
+									{title}
+								</p>
 								<div className="relative group w-fit">
 									{/* Shadow */}
 									<div
@@ -250,18 +260,18 @@ function App() {
 
 							<Separator className="w-full h-[1px] bg-gray-300 dark:bg-gray-700 my-3" />
 
-							<div className="w-full flex items-center gap-2 text-sm font-medium text-muted-foreground">
-								<Youtube className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+							<div className="w-full flex flex-wrap items-center gap-1.5 sm:gap-2 text-sm font-medium text-muted-foreground">
+								<Youtube className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />
 								<p className="text-foreground">Channel:</p>
 								<a href={channelUrl} target="_blank" rel="noopener noreferrer">
-									<span className="text-gray-700 dark:text-gray-300 hover:underline hover:text-primary transition-colors truncate">
+									<span className="text-gray-700 dark:text-gray-300 hover:underline hover:text-primary transition-colors truncate max-w-[150px] sm:max-w-xs">
 										{channelTitle}
 									</span>
 								</a>
 							</div>
 
 							<div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 mt-2">
-								<Eye className="w-4 h-4" />
+								<Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
 								<span>{formatViews(views)} views</span>
 							</div>
 						</div>
