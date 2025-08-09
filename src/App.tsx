@@ -2,17 +2,12 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
-import {
-	ArrowBigDownDash,
-	Eye,
-	Moon,
-	Search,
-	Sun,
-	Youtube,
-} from "lucide-react";
-import { Separator } from "@radix-ui/react-separator";
+import { ArrowBigDownDash, Eye, Moon, Search, Sun } from "lucide-react";
 import { DownloadDialog } from "./components/DownloadDialog";
 import { Skeleton } from "./components/ui/skeleton";
+import { Separator } from "./components/ui/separator";
+import SuccessMessage from "./shared/utils/SuccessMessage";
+import ErrorMessage from "./shared/utils/ErrorMessage";
 
 function App() {
 	const API_KEY = import.meta.env.VITE_YT_API_KEY;
@@ -32,11 +27,35 @@ function App() {
 	const [fullTitle, setFullTitle] = useState("");
 	const [channelTitle, setChannelTitle] = useState("");
 	const [channelUrl, setChannelUrl] = useState("");
+	const [fileSize, setFileSize] = useState<number>(0);
+
+	const [downloadProgress, setDownloadProgress] = useState(0);
+	const [isDownloading, setIsDownloading] = useState(false);
+	const [downloadComplete, setDownloadComplete] = useState(false);
+	const [error, setError] = useState(false);
 
 	useEffect(() => {
 		const savedTheme = localStorage.getItem("theme");
 		setIsChecked(savedTheme === "dark");
 	}, []);
+
+	useEffect(() => {
+		if (error) {
+			const timer = setTimeout(() => {
+				setError(false);
+			}, 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [error]);
+
+	useEffect(() => {
+		if (downloadComplete) {
+			const timer = setTimeout(() => {
+				setDownloadComplete(false);
+			}, 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [downloadComplete]);
 
 	const handleCheckboxChange = () => {
 		const newChecked = !isChecked;
@@ -73,7 +92,7 @@ function App() {
 	}
 
 	async function searchVideos() {
-		setLoading(true); // START loading
+		setLoading(true);
 		try {
 			console.log("User search query = " + searchQuery);
 			setVideoId("");
@@ -112,6 +131,7 @@ function App() {
 			setFullTitle(data.fulltitle);
 			setChannelTitle(data.channel);
 			setChannelUrl(data.channel_url);
+			setFileSize(data.filesize_approx);
 
 			const videoData = await videoResources.json();
 			console.log("Youtube API video data: ", videoData);
@@ -198,7 +218,7 @@ function App() {
 			</div>
 
 			{loading && (
-				<div className="flex flex-col gap-6 mt-6 w-full max-w-[47rem] mx-auto">
+				<div className="flex flex-col gap-6 mt-6 w-full max-w-[48rem] mx-auto">
 					{/* Video thumbnail skeleton */}
 					<div className="aspect-video w-full">
 						<Skeleton className="h-full w-full rounded-lg bg-[#c9ced8] dark:bg-[#1f1f1f]" />
@@ -235,33 +255,18 @@ function App() {
 								<p className="text-base sm:text-lg font-semibold leading-snug flex-1 break-words">
 									{title}
 								</p>
-								<div className="relative group w-fit">
-									{/* Shadow */}
-									<div
-										className="absolute inset-0 rounded-md bg-black/30 translate-y-0.5 group-hover:translate-y-1 group-active:translate-y-0 transition-transform duration-300"
-										aria-hidden="true"
-									></div>
-
-									{/* Edge */}
-									<div
-										className="absolute inset-0 rounded-md bg-gradient-to-l from-[#2a2a2a] to-[#171616]"
-										aria-hidden="true"
-									></div>
-
-									{/* Front face with icon */}
-									<button
+								<div className="">
+									<Button
 										onClick={() => setShowDownloadDialog(true)}
-										className="relative z-10 flex items-center justify-center p-1.5 rounded-md bg-gradient-to-b from-[#2a2a2a] to-[#171616] transform -translate-y-[2px] group-hover:-translate-y-[4px] group-active:-translate-y-[1px] transition-transform duration-300 hover:cursor-pointer"
+										variant="outline"
+										className="hover:cursor-pointer"
 									>
-										<ArrowBigDownDash className="w-4 h-4 text-white" />
-									</button>
+										<ArrowBigDownDash />
+									</Button>
 								</div>
 							</div>
 
-							<Separator className="w-full h-[1px] bg-gray-300 dark:bg-gray-700 my-3" />
-
 							<div className="w-full flex flex-wrap items-center gap-1.5 sm:gap-2 text-sm font-medium text-muted-foreground">
-								<Youtube className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />
 								<p className="text-foreground">Channel:</p>
 								<a href={channelUrl} target="_blank" rel="noopener noreferrer">
 									<span className="text-gray-700 dark:text-gray-300 hover:underline hover:text-primary transition-colors truncate max-w-[150px] sm:max-w-xs">
@@ -275,6 +280,26 @@ function App() {
 								<span>{formatViews(views)} views</span>
 							</div>
 						</div>
+
+						{isDownloading && <Separator className="mb-2" />}
+						{isDownloading && (
+							<div className="flex w-full items-center justify-center mb-3">
+								<div className="w-full max-w-[95%] mx-auto">
+									<div className="flex justify-between">
+										<p className="text-xs mb-1 opacity-95">Downloading...</p>
+										<p className="text-xs text-right text-gray-600 dark:text-gray-400">
+											{downloadProgress}%
+										</p>
+									</div>
+									<div className="w-full bg-gray-300 dark:bg-[#39404c] border dark:border-[rgba(229,229,229,0.27)] rounded-full h-3">
+										<div
+											className="bg-green-600 h-3 rounded-full transition-all duration-150"
+											style={{ width: `${downloadProgress}%` }}
+										></div>
+									</div>
+								</div>
+							</div>
+						)}
 					</div>
 				</div>
 			)}
@@ -284,10 +309,27 @@ function App() {
 				videoId={videoId}
 				onClose={() => setShowDownloadDialog(false)}
 				fileName={fullTitle}
+				fileSize={fileSize}
 				onSubmit={() => {
 					console.log("Start downloading");
 				}}
+				setProgress={setDownloadProgress}
+				setIsDownloading={setIsDownloading}
+				setDownloadComplete={setDownloadComplete}
+				setError={setError}
 			/>
+
+			{error && (
+				<div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[80%] sm:w-fit">
+					<ErrorMessage message="An error occurred while downloading" />
+				</div>
+			)}
+
+			{downloadComplete && (
+				<div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[80%] sm:w-fit">
+					<SuccessMessage message="The video downloaded successfully" />
+				</div>
+			)}
 		</div>
 	);
 }
