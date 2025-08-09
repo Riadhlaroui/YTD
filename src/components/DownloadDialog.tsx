@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CircleX, Download, PlusCircle, X } from "lucide-react";
+import { CircleX, Download, Info, PlusCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "./ui/separator";
 import {
@@ -226,6 +226,15 @@ export function DownloadDialog({
 							)}
 						</SelectContent>
 					</Select>
+				</div>
+
+				<div className="flex items-start gap-2 text-sm text-muted-foreground mt-2">
+					<Info className="w-4 h-4 mt-0.5" />
+					<p>
+						<span className="font-medium">Note:</span> When the download is
+						complete, it is recommended to use{" "}
+						<span className="font-semibold">VLC Media Player</span>.
+					</p>
 				</div>
 
 				<div className="flex justify-end gap-2 pt-4">

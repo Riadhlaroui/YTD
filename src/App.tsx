@@ -283,19 +283,29 @@ function App() {
 
 						{isDownloading && <Separator className="mb-2" />}
 						{isDownloading && (
-							<div className="flex w-full items-center justify-center mb-3">
+							<div className="flex w-full items-center justify-center mb-4">
 								<div className="w-full max-w-[95%] mx-auto">
-									<div className="flex justify-between">
-										<p className="text-xs mb-1 opacity-95">Downloading...</p>
-										<p className="text-xs text-right text-gray-600 dark:text-gray-400">
+									<div className="flex justify-between items-center mb-1">
+										<p className="text-xs font-medium opacity-90">
+											Downloading...
+										</p>
+										<p className="text-xs text-gray-600 dark:text-gray-400">
 											{downloadProgress}%
 										</p>
 									</div>
-									<div className="w-full bg-gray-300 dark:bg-[#39404c] border dark:border-[rgba(229,229,229,0.27)] rounded-full h-3">
+
+									<div className="relative w-full h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-[#2f3540] border dark:border-[rgba(229,229,229,0.12)]">
+										{/* Progress fill */}
 										<div
-											className="bg-green-600 h-3 rounded-full transition-all duration-150"
+											className="absolute left-0 top-0 h-full bg-gradient-to-r from-green-500 to-green-400 transition-[width] duration-300 ease-linear"
 											style={{ width: `${downloadProgress}%` }}
-										></div>
+										/>
+
+										{/* Streaming shimmer effect */}
+										<div
+											className="absolute top-0 h-full w-1/3 bg-white/20 blur-sm animate-[shimmer_1.5s_infinite]"
+											style={{ left: `${downloadProgress - 30}%` }}
+										/>
 									</div>
 								</div>
 							</div>
