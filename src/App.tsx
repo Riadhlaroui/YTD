@@ -297,7 +297,7 @@ function App() {
 									<div className="relative w-full h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-[#2f3540] border dark:border-[rgba(229,229,229,0.12)]">
 										{/* Progress fill */}
 										<div
-											className="absolute left-0 top-0 h-full bg-gradient-to-r from-green-500 to-green-400 transition-[width] duration-300 ease-linear"
+											className="absolute left-0 top-0 h-full bg-gradient-to-r from-[#1740e4] to-blue-600 transition-[width] duration-300 ease-linear"
 											style={{ width: `${downloadProgress}%` }}
 										/>
 
@@ -320,8 +320,9 @@ function App() {
 				onClose={() => setShowDownloadDialog(false)}
 				fileName={fullTitle}
 				fileSize={fileSize}
-				onSubmit={() => {
-					console.log("Start downloading");
+				onSubmit={(path, mode) => {
+					console.log("Selected path:", path);
+					console.log("Selected mode:", mode);
 				}}
 				setProgress={setDownloadProgress}
 				setIsDownloading={setIsDownloading}

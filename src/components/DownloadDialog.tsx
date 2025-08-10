@@ -17,7 +17,7 @@ interface DownloadDialogProps {
 	onClose: () => void;
 	fileName: string;
 	fileSize: number;
-	onSubmit: (newValue: string) => void;
+	onSubmit: (path: string, mode: "video" | "audio") => void;
 	setProgress: (value: number) => void;
 	setIsDownloading: (value: boolean) => void;
 	setDownloadComplete: (value: boolean) => void;
@@ -32,6 +32,7 @@ export function DownloadDialog({
 	onClose,
 	fileName,
 	fileSize,
+	onSubmit,
 	setProgress,
 	setIsDownloading,
 	setDownloadComplete,
@@ -43,12 +44,14 @@ export function DownloadDialog({
 	const [adding, setAdding] = useState(false);
 	const [newPath, setNewPath] = useState("");
 
+	const [isChecked, setIsChecked] = useState(true);
+
 	// Load from localStorage
 	useEffect(() => {
 		const saved = localStorage.getItem(STORAGE_KEY);
 		if (saved) {
 			try {
-				setPaths(JSON.parse(saved)); // parses to string[]
+				setPaths(JSON.parse(saved));
 			} catch {
 				console.warn("Invalid download_paths in localStorage");
 				setPaths([]);
@@ -80,6 +83,10 @@ export function DownloadDialog({
 		setAdding(false);
 	};
 
+	const handleCheckboxChange = () => {
+		setIsChecked(!isChecked);
+	};
+
 	useEffect(() => {
 		if (open) {
 			document.body.style.overflow = "hidden";
@@ -105,15 +112,19 @@ export function DownloadDialog({
 			setProgress(progressValue);
 		}, 69);
 
+		const mode = isChecked ? "video" : "audio";
+
 		try {
 			const res = await fetch(
-				`/api/download?url=https://www.youtube.com/watch?v=${videoId}&path=${path}`
+				`/api/download?url=https://www.youtube.com/watch?v=${videoId}&path=${path}&mode=${mode}`
 			);
 
 			if (!res.ok) {
 				const errText = await res.text();
 				throw new Error(errText);
 			}
+
+			console.log("Download type:", mode);
 
 			const data = await res.text();
 			console.log("yt-dlp download output:", data);
@@ -144,6 +155,8 @@ export function DownloadDialog({
 
 	const handleSubmit = () => {
 		if (!path) return;
+		const mode = isChecked ? "video" : "audio";
+		onSubmit(path, mode);
 		sendDownloadRequest(videoId);
 		onClose();
 	};
@@ -166,7 +179,7 @@ export function DownloadDialog({
 				<h2 className="text-xl font-semibold">Download Configuration</h2>
 
 				<div className="space-y-2">
-					<h3 className="text-lg font-medium opacity-80">File Info:</h3>
+					<h3 className="text-lg font-medium opacity-80">File Info</h3>
 					<div className="p-3 border border-black dark:border-[rgba(229,229,229,0.27)] rounded-md flex flex-col bg-[#e2e2e284] dark:bg-[#333438c7] gap-3">
 						<div className="flex flex-col">
 							<span className="opacity-70">Title</span>
@@ -183,7 +196,7 @@ export function DownloadDialog({
 
 				<div className="space-y-2">
 					<label className="font-medium opacity-70">
-						Please select the destination folder:
+						Please select the destination folder
 					</label>
 					<Select onValueChange={setPath} value={path}>
 						<SelectTrigger className="w-full mt-1">
@@ -226,6 +239,42 @@ export function DownloadDialog({
 							)}
 						</SelectContent>
 					</Select>
+				</div>
+
+				<div className="w-full">
+					<label className="text-sm font-medium mb-1 opacity-70">
+						Download type
+					</label>
+					<div className="flex items-center justify-between w-full">
+						<label className="relative inline-flex items-center w-full rounded-md border border-gray-300 dark:border-white/10 bg-white dark:bg-[#1f1f1f]">
+							<input
+								type="checkbox"
+								className="sr-only peer"
+								checked={isChecked}
+								onChange={handleCheckboxChange}
+							/>
+							{/* Audio */}
+							<span
+								className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-l-md transition-all ${
+									!isChecked
+										? "bg-gray-200 text-black dark:bg-white/10 dark:text-white"
+										: "text-gray-500 dark:text-gray-400"
+								}`}
+							>
+								Audio
+							</span>
+							{/* Video */}
+							<span
+								className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-r-md transition-all ${
+									isChecked
+										? "bg-gray-200 text-black dark:bg-white/10 dark:text-white"
+										: "text-gray-500 dark:text-gray-400"
+								}`}
+							>
+								Video
+							</span>
+						</label>
+					</div>
 				</div>
 
 				<div className="flex items-start gap-2 text-sm text-muted-foreground mt-2">
