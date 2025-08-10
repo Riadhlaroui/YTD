@@ -9,6 +9,8 @@ import { Separator } from "./components/ui/separator";
 import SuccessMessage from "./shared/utils/SuccessMessage";
 import ErrorMessage from "./shared/utils/ErrorMessage";
 
+//TODO: Refactor the code
+
 function App() {
 	const API_KEY = import.meta.env.VITE_YT_API_KEY;
 

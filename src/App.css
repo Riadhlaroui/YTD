@@ -1,5 +1,5 @@
 #root {
 	padding: 1.5rem;
 	min-height: 100vh;
-	box-sizing: border-box; /* Key fix */
+	box-sizing: border-box;
 }

@@ -13,7 +13,6 @@ const SuccessMessage: React.FC<SuccessMessageProps> = ({
 	const [visible, setVisible] = useState(false);
 
 	useEffect(() => {
-		// Fade in
 		setVisible(true);
 
 		const timer = setTimeout(() => setVisible(false), 3500);

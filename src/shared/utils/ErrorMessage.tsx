@@ -13,10 +13,8 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({
 	const [visible, setVisible] = useState(false);
 
 	useEffect(() => {
-		// Fade in
 		setVisible(true);
 
-		// Fade out after 3.5 seconds
 		const timer = setTimeout(() => setVisible(false), 3500);
 		return () => clearTimeout(timer);
 	}, []);

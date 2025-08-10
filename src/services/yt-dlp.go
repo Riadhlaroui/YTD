@@ -63,7 +63,6 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("yt-dlp error: %v\n%s", errDownload, string(output))
 		}
 
-		// Parse JSON to check resolution (only for video mode)
 		if mode != "audio" {
 			var info struct {
 				Width  int `json:"width"`
@@ -82,9 +81,8 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			log.Println("Resolution below 1080p, retrying...")
-			time.Sleep(2 * time.Second) // Small delay before retry
+			time.Sleep(2 * time.Second)
 		} else {
-			// Audio mode doesn't need retries
 			break
 		}
 	}
@@ -105,7 +103,7 @@ func videoInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Run yt-dlp to get video info (or change this to download)
+	// Run yt-dlp to get video info
 	cmd := exec.Command("yt-dlp", "--dump-json", url)
 	output, err := cmd.Output()
 	if err != nil {
