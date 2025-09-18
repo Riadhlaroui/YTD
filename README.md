@@ -2,6 +2,10 @@
 - yt-dlp installed (latest version)
 - ffmpeg
 
+### Features to Add or Improve
+- Better UI styling
+- Fix download path issues on mobile devices
+- Improve error handling
 
 # React + TypeScript + Vite
 
