@@ -1,8 +1,15 @@
+### To Run:
+You need to have yt-dlp and ffmpeg installed.
+To start the project, run:
+`npm run dev`
+Then, in the services directory, run:
+`go run yt-dlp.go`
+
 ### Requirements:
 - yt-dlp installed (latest version)
 - ffmpeg
 
-### Features to Add or Improve
+### Features to Add or Improve:
 - Better UI styling
 - Fix download path issues on mobile devices
 - Improve error handling
