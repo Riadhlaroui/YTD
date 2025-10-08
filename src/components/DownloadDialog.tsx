@@ -87,6 +87,26 @@ export function DownloadDialog({
 		setIsChecked(!isChecked);
 	};
 
+	const openDownloadDialog = (filename: string, content: string): void => {
+		const blob = new Blob([content], { type: "" });
+		const url = URL.createObjectURL(blob);
+
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = filename;
+
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+
+		URL.revokeObjectURL(url);
+	};
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const handleDownload = () => {
+		openDownloadDialog("hello.txt", "Hello, world!");
+	};
+
 	useEffect(() => {
 		if (open) {
 			document.body.style.overflow = "hidden";
@@ -167,7 +187,7 @@ export function DownloadDialog({
 		<div className="fixed p-2 inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50">
 			<div
 				ref={dialogRef}
-				className="bg-white dark:bg-[#262626] text-black dark:text-white rounded-lg shadow-lg w-full max-w-md p-4.5 space-y-4 relative"
+				className="bg-white dark:bg-[#181818] text-black dark:text-white rounded-lg shadow-lg w-full max-w-[35rem] p-4.5 space-y-4 relative"
 			>
 				<button
 					onClick={onClose}

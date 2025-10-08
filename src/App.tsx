@@ -163,7 +163,7 @@ function App() {
 					<Input
 						id="search"
 						type="text"
-						className="w-full text-base md:text-sm"
+						className="w-full text-base md:text-sm "
 						placeholder="YouTube URL"
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
@@ -221,17 +221,19 @@ function App() {
 
 			{loading && (
 				<div className="flex flex-col gap-6 mt-6 w-full max-w-[48rem] mx-auto">
-					{/* Video thumbnail skeleton */}
 					<div className="aspect-video w-full">
 						<Skeleton className="h-full w-full rounded-lg bg-[#c9ced8] dark:bg-[#1f1f1f]" />
 					</div>
 
-					{/* Text skeletons */}
-					<div className="flex flex-col gap-3 px-2">
-						<Skeleton className="h-6 w-2/5 bg-[#c9ced8] dark:bg-[#1f1f1f]" />{" "}
-						{/* Title */}
-						<Skeleton className="h-4 w-3/5 bg-[#c9ced8] dark:bg-[#1f1f1f]" />{" "}
-						{/* Subtitle */}
+					<div className="flex flex-row justify-between items-start h-10 w-full">
+						<div className="flex flex-col gap-3 min-w-[45rem] px-2">
+							<Skeleton className="h-6 w-2/5 bg-[#c9ced8] dark:bg-[#222222]" />{" "}
+							<Skeleton className="h-4 w-3/5 bg-[#c9ced8] dark:bg-[#1f1f1f]" />{" "}
+						</div>
+
+						<div>
+							<Skeleton className="h-10 w-10 bg-[#c9ced8] dark:bg-[#1f1f1f]" />
+						</div>
 					</div>
 				</div>
 			)}
